@@ -89,6 +89,12 @@
   .review .ra .tick{color:var(--good);font-weight:700}
   .review .ra .cross{color:var(--bad);font-weight:700}
   .review .ra .mut{color:var(--mut)}
+  .wrongsum{margin:14px auto 0;max-width:620px;background:#1a0f14;border:1px solid #4a2230;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.7;color:#ffb3bd;text-align:center;display:none}
+  .wrongsum.show{display:block}
+  .wrongsum.perfect{background:#0f1f16;border-color:#1e4a33;color:var(--good)}
+  .wrongsum b{color:#ff8a98}
+  .wrongsum .wn{display:inline-block;background:#3a1620;border:1px solid #5a2535;color:#ffd0d6;border-radius:7px;padding:1px 8px;margin:2px;font-weight:700;cursor:pointer}
+  .wrongsum .wn:hover{background:#5a2535}
   .footer{color:var(--mut);font-size:11.5px;text-align:center;margin-top:26px;line-height:1.7}
   .hidden{display:none!important}
   .badge{font-size:11px;color:var(--mut)}
@@ -148,10 +154,12 @@
     <svg class="donut" id="donut" width="150" height="150" viewBox="0 0 150 150"></svg>
     <div class="scorebig"><span id="scoreNum">0</span><span style="font-size:24px;color:var(--mut)">/<span id="scoreTotal">0</span></span></div>
     <div class="scoresub" id="scoreMsg"></div>
-    <div class="nav" style="justify-content:center;margin-top:18px">
+    <div class="wrongsum" id="wrongSummary"></div>
+    <div class="nav" style="justify-content:center;margin-top:18px;flex-wrap:wrap">
       <button class="btn" id="retryBtn">ทำใหม่</button>
-      <button class="btn ghost" id="homeBtn">กลับหน้าแรก</button>
-      <button class="btn primary" id="reviewBtn">ดูเฉลยทั้งหมด</button>
+      <button class="btn ghost" id="homeBtn">หน้าแรก</button>
+      <button class="btn" id="reviewAllBtn">ดูเฉลยทั้งหมด</button>
+      <button class="btn primary" id="reviewWrongBtn">ดูเฉพาะข้อที่ผิด</button>
     </div>
     <div class="review hidden" id="review" style="margin-top:18px"></div>
   </section>
@@ -243,7 +251,9 @@ const el = {
   progress:$("#progress"), qtext:$("#qtext"), choices:$("#choices"),
   explain:$("#explain"), nextBtn:$("#nextBtn"), quitBtn:$("#quitBtn"),
   scoreNum:$("#scoreNum"), scoreTotal:$("#scoreTotal"), scoreMsg:$("#scoreMsg"),
-  retryBtn:$("#retryBtn"), homeBtn:$("#homeBtn"), reviewBtn:$("#reviewBtn"),
+  retryBtn:$("#retryBtn"), homeBtn:$("#homeBtn"),
+  reviewAllBtn:$("#reviewAllBtn"), reviewWrongBtn:$("#reviewWrongBtn"),
+  wrongSummary:$("#wrongSummary"),
   review:$("#review"), donut:$("#donut"),
   shuffleQ:$("#shuffleQ"), shuffleC:$("#shuffleC"), instant:$("#instant"),
 };
@@ -340,6 +350,19 @@ function finish(){
   let msg = pct>=90?"สุดยอด! พร้อมสอบแล้ว 🔥":pct>=70?"ดีมาก ทบทวนข้อที่ผิดอีกนิด 💪":pct>=50?"ผ่านเกณฑ์ แต่ต้องอ่านเพิ่ม 📚":"ต้องทบทวนอีกเยอะนะ ลองดูเฉลยทั้งหมด 👀";
   el.scoreMsg.textContent = `${pct}% — ${msg}`;
   drawDonut(pct);
+  // สรุปข้อที่ตอบผิด
+  const wrong = [];
+  state.pool.forEach((q,i)=>{ const picked = q.picked===null?null:q.order[q.picked]; if(picked!==q.a) wrong.push(i); });
+  const ws = el.wrongSummary;
+  if(wrong.length===0){
+    ws.className = "wrongsum show perfect";
+    ws.innerHTML = "🎉 ตอบถูกทุกข้อ! เพอร์เฟกต์";
+  } else {
+    ws.className = "wrongsum show";
+    const chips = wrong.map(i=>`<span class="wn" data-i="${i}">ข้อ ${i+1}</span>`).join("");
+    ws.innerHTML = `ตอบผิด <b>${wrong.length}</b> ข้อ (คลิกที่เลขเพื่อดูเฉลยข้อนั้น):<br>${chips}`;
+    ws.querySelectorAll(".wn").forEach(c=> c.onclick = ()=>{ renderReview("wrong"); const t=document.getElementById("ritem-"+c.dataset.i); if(t){ t.scrollIntoView({behavior:"smooth",block:"center"}); t.style.outline="2px solid var(--acc2)"; setTimeout(()=>t.style.outline="",1500);} });
+  }
 }
 
 function drawDonut(pct){
@@ -353,22 +376,27 @@ function drawDonut(pct){
     <text x="75" y="82" text-anchor="middle" fill="${col}" font-size="26" font-weight="800" font-family="monospace">${pct}%</text>`;
 }
 
-el.reviewBtn.onclick = ()=>{
-  const r = el.review; r.classList.toggle("hidden");
-  if(r.classList.contains("hidden")) return;
-  r.innerHTML = state.pool.map((q,i)=>{
+function renderReview(filter){
+  const r = el.review; r.classList.remove("hidden");
+  let items = state.pool.map((q,i)=>({q,i}));
+  if(filter==="wrong") items = items.filter(({q})=>{ const p=q.picked===null?null:q.order[q.picked]; return p!==q.a; });
+  if(items.length===0){ r.innerHTML = `<div class="ritem" style="text-align:center;color:var(--good)">🎉 ไม่มีข้อที่ตอบผิดเลย</div>`; return; }
+  const head = `<div style="font-size:13px;color:var(--mut);margin-bottom:6px">${filter==="wrong"?`แสดงเฉพาะ <b style="color:#ff8a98">${items.length}</b> ข้อที่ตอบผิด`:`แสดงทั้งหมด ${items.length} ข้อ`}</div>`;
+  r.innerHTML = head + items.map(({q,i})=>{
     const chosenReal = q.picked===null?null:q.order[q.picked];
     const ok = chosenReal===q.a;
     const yourTxt = chosenReal===null?"<span class='mut'>ไม่ได้ตอบ</span>":fmt(q.c[chosenReal]);
     const sm=SECMAP[q.s];
-    return `<div class="ritem">
+    return `<div class="ritem" id="ritem-${i}" style="${ok?'':'border-color:#5a2535'}">
       <div class="rq"><span class="${sm[1]}">${sm[0]}</span> &nbsp;${i+1}. ${fmt(q.q)}</div>
       <div class="ra">${ok?"<span class='tick'>✓ ตอบถูก</span>":"<span class='cross'>✗ ตอบผิด</span>"} &nbsp;|&nbsp; คำตอบคุณ: ${yourTxt}</div>
       <div class="ra" style="margin-top:4px">เฉลย: <b style="color:var(--good)">${fmt(q.c[q.a])}</b></div>
       ${q.e?`<div class="ra mut" style="margin-top:4px">${fmt(q.e)}</div>`:""}
     </div>`;
   }).join("");
-};
+}
+el.reviewAllBtn.onclick = ()=> renderReview("all");
+el.reviewWrongBtn.onclick = ()=> renderReview("wrong");
 el.retryBtn.onclick = ()=> startQuiz(state.mode);
 el.homeBtn.onclick = ()=> goHome();
 
