@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Cyber Final — Quiz</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#121823; --panel2:#0f1520; --line:#223047;
+    --txt:#e6edf3; --mut:#8b9bb4; --acc:#39d98a; --acc2:#2bb3ff;
+    --bad:#ff5c6c; --good:#39d98a; --warn:#ffb020; --chip:#1b2534;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(43,179,255,.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(57,217,138,.08), transparent 60%),
+      var(--bg);
+    color:var(--txt);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono","Noto Sans Thai",system-ui,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:16px 16px 80px}
+  header.top{display:flex;align-items:center;gap:12px;padding:20px 4px 10px}
+  .logo{font-weight:800;letter-spacing:.5px;font-size:18px}
+  .logo .dim{color:var(--mut);font-weight:600}
+  .tagline{color:var(--mut);font-size:12px;margin-top:2px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  h1{font-size:20px;margin:0 0 6px}
+  h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
+  p.lead{color:var(--mut);font-size:13.5px;line-height:1.6;margin:0 0 16px}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.modes{grid-template-columns:1fr}}
+  .mode{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px;transition:.15s;text-align:left}
+  .mode:hover{border-color:var(--acc);transform:translateY(-2px)}
+  .mode .num{font-size:30px;font-weight:800;color:var(--acc)}
+  .mode .lbl{font-weight:700;margin-top:4px}
+  .mode .desc{color:var(--mut);font-size:12px;margin-top:6px;line-height:1.5}
+  .mode.blue .num{color:var(--acc2)}
+  .mode.blue:hover{border-color:var(--acc2)}
+  .opts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);cursor:pointer;user-select:none}
+  .toggle input{accent-color:var(--acc);width:16px;height:16px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--txt);padding:11px 18px;border-radius:12px;font:inherit;font-size:14px;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:var(--acc)}
+  .btn.primary{background:var(--acc);color:#05210f;border-color:var(--acc);font-weight:800}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* progress */
+  .bar{height:8px;background:#0b111b;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:4px 0 0}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:.3s}
+  .meta{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--mut);margin-bottom:6px}
+  .pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut);background:#0d1420}
+  .pill.pdf{color:#ffd37a;border-color:#4a3f1e}
+  .pill.qa{color:#9fd3ff;border-color:#1e3a4a}
+  .pill.cmd{color:#c6a0ff;border-color:#2e1e4a}
+  .pill.scenario{color:#8affc0;border-color:#1e4a33}
+
+  .qtext{font-size:16.5px;line-height:1.6;margin:10px 0 16px;white-space:pre-wrap;word-break:break-word}
+  code,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .qtext code{background:#0b1220;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:14px;color:var(--acc)}
+  .choices{display:flex;flex-direction:column;gap:10px}
+  .choice{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer;transition:.12s;font:inherit;font-size:14.5px;color:var(--txt);line-height:1.5;word-break:break-word}
+  .choice:hover{border-color:var(--acc2)}
+  .choice .key{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#0b1220;border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--mut)}
+  .choice.correct{border-color:var(--good);background:rgba(57,217,138,.10)}
+  .choice.correct .key{background:var(--good);color:#05210f;border-color:var(--good)}
+  .choice.wrong{border-color:var(--bad);background:rgba(255,92,108,.10)}
+  .choice.wrong .key{background:var(--bad);color:#2a0b0f;border-color:var(--bad)}
+  .choice.dim{opacity:.55}
+  .choice:disabled{cursor:default}
+  .nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+  .explain{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed var(--line);background:#0c1320;font-size:13px;color:var(--mut);line-height:1.6;display:none}
+  .explain.show{display:block}
+  .explain b{color:var(--acc)}
+
+  /* result */
+  .scorebig{font-size:54px;font-weight:800;text-align:center;letter-spacing:1px}
+  .scoresub{text-align:center;color:var(--mut);margin-top:4px}
+  .donut{display:block;margin:6px auto 10px}
+  .review .ritem{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;background:var(--panel2)}
+  .review .rq{font-size:14px;line-height:1.55;margin-bottom:8px}
+  .review .ra{font-size:13px;line-height:1.5}
+  .review .ra .tick{color:var(--good);font-weight:700}
+  .review .ra .cross{color:var(--bad);font-weight:700}
+  .review .ra .mut{color:var(--mut)}
+  .footer{color:var(--mut);font-size:11.5px;text-align:center;margin-top:26px;line-height:1.7}
+  .hidden{display:none!important}
+  .badge{font-size:11px;color:var(--mut)}
+  .kbd{font-size:11px;color:var(--mut);margin-left:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="logo">⟩⟩ CYBER <span class="dim">FINAL / quiz</span></div>
+      <div class="tagline">ติวก่อนสอบ · multiple choice · เลือกโหมดด้านล่าง</div>
+    </div>
+  </header>
+
+  <!-- START -->
+  <section id="start" class="card">
+    <h1>เลือกโหมดการทำข้อสอบ</h1>
+    <p class="lead">โหมด <b>25 ข้อ</b> = เฉพาะคำถามที่อยู่ใน PDF ที่ส่งมา · โหมด <b>60 ข้อ</b> = 25 ข้อจาก PDF + 35 ข้อจำลอง (ถามตอบ / คำสั่ง / สถานการณ์) อิงจาก lab ที่ทำมา</p>
+    <div class="modes">
+      <button class="mode" data-mode="25">
+        <div class="num">25</div>
+        <div class="lbl">เฉพาะข้อใน PDF</div>
+        <div class="desc">คำถามถามตอบตามเอกสารที่อาจารย์ให้</div>
+      </button>
+      <button class="mode blue" data-mode="60">
+        <div class="num">60</div>
+        <div class="lbl">ชุดเต็ม (mock)</div>
+        <div class="desc">25 PDF + 25 ถามตอบ/concept + 10 คำสั่ง + สถานการณ์</div>
+      </button>
+    </div>
+    <div class="opts">
+      <label class="toggle"><input type="checkbox" id="shuffleQ" checked> สลับลำดับข้อ</label>
+      <label class="toggle"><input type="checkbox" id="shuffleC" checked> สลับตัวเลือก</label>
+      <label class="toggle"><input type="checkbox" id="instant" checked> เฉลยทันทีหลังตอบ</label>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="card hidden">
+    <div class="meta">
+      <span><span id="qnum">1</span> / <span id="qtotal">25</span></span>
+      <span id="qsection" class="pill">—</span>
+    </div>
+    <div class="bar"><i id="progress"></i></div>
+    <div class="qtext" id="qtext"></div>
+    <div class="choices" id="choices"></div>
+    <div class="explain" id="explain"></div>
+    <div class="nav">
+      <button class="btn ghost" id="quitBtn">ออก</button>
+      <button class="btn primary" id="nextBtn" disabled>ถัดไป →</button>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="card hidden">
+    <svg class="donut" id="donut" width="150" height="150" viewBox="0 0 150 150"></svg>
+    <div class="scorebig"><span id="scoreNum">0</span><span style="font-size:24px;color:var(--mut)">/<span id="scoreTotal">0</span></span></div>
+    <div class="scoresub" id="scoreMsg"></div>
+    <div class="nav" style="justify-content:center;margin-top:18px">
+      <button class="btn" id="retryBtn">ทำใหม่</button>
+      <button class="btn ghost" id="homeBtn">กลับหน้าแรก</button>
+      <button class="btn primary" id="reviewBtn">ดูเฉลยทั้งหมด</button>
+    </div>
+    <div class="review hidden" id="review" style="margin-top:18px"></div>
+  </section>
+
+  <div class="footer">
+    สร้างไว้ติวสอบ · ตอบตาม answer key ของอาจารย์ (เช่น OWASP ZAP = SAST ตามเฉลย)<br>
+    กด <b>1–4</b> เพื่อเลือกคำตอบ · <b>Enter</b> เพื่อไปข้อถัดไป
+  </div>
+</div>
+
+<script>
+/* ---------------- QUESTION BANK ---------------- */
+/* section: pdf | qa | cmd | scenario ; answer = index of correct choice */
+const BANK = [
+  /* ===== 25 จาก PDF ===== */
+  {s:"pdf",q:"รูปแบบของการโจมตีแบบใดที่เหมือนกับการโจมตีของ Hacker จริง ๆ มากที่สุด",c:["Black Box","White Box","Grey Box","Crystal Box"],a:0,e:"Black Box = ผู้ทดสอบไม่รู้ข้อมูลภายในเลย เหมือน hacker จริง"},
+  {s:"pdf",q:"ตามมาตรฐาน PTES ขั้นตอนใดเป็นขั้นตอนที่กระทำหลังจากเข้าไปในระบบของเป้าหมายได้",c:["Exploitation","Post Exploitation","Pre-engagement","Intelligence Gathering"],a:1,e:"Post Exploitation = หลังเจาะเข้าได้แล้ว (เก็บข้อมูล, คง access, ยกสิทธิ์)"},
+  {s:"pdf",q:"การคิดค่าใช้จ่ายของ project มักจะอยู่ที่จำนวน____ ซึ่งคำนวณจากจำนวน IP, web application, ลักษณะการทดสอบ",c:["man-hour","man-day","man-month","head-count"],a:1,e:"Man-day = จำนวนวันทำงานของคน 1 คน"},
+  {s:"pdf",q:"Information Gathering นั้นเป็นการหาข้อมูลแบบใด",c:["Active mode","Passive mode","Aggressive mode","Brute mode"],a:1,e:"Passive = ไม่ยิงตรงไปที่เป้าหมาย (ใช้ OSINT, Shodan, archive)"},
+  {s:"pdf",q:"Social Engineering ที่ติดต่อผู้ใช้งานหรือสร้างปฏิสัมพันธ์กับผู้ใช้โดยตรงเพื่อหลอกถามข้อมูล เป็นแบบใด",c:["Computer-Based","Human-Based","Network-Based","Physical-Based"],a:1,e:"Human-Based = ใช้คนหลอกคน (โทร, แอบอ้าง) / Computer-Based = ใช้ระบบ เช่น phishing"},
+  {s:"pdf",q:"เครื่องมือสำหรับค้นหา Banner ของ Server โดยไม่ติดต่อไปยังเป้าหมายโดยตรง",c:["Nmap","Nessus","Shodan","Burp Suite"],a:2,e:"Shodan = search engine สำหรับอุปกรณ์ที่ต่อ internet (passive)"},
+  {s:"pdf",q:"เว็บไซต์สำหรับการค้นหาข้อมูลแบบ Public Archive",c:["Wayback Machine","Shodan","Censys","VirusTotal"],a:0,e:"Wayback Machine (web.archive.org) เก็บ snapshot เว็บย้อนหลัง"},
+  {s:"pdf",q:"VBA ย่อมาจากอะไร",c:["Visual Basic Advanced","Virtual Basic Application","Visual Basic for Applications","Visual Binary Assembly"],a:2,e:"VBA = Visual Basic for Applications (มักใช้ทำ macro malware)"},
+  {s:"pdf",q:"การ ping แบบกวาดเรียกอีกอย่างว่าอะไร",c:["Ping Flood","Ping Sweep","Ping of Death","ICMP Tunnel"],a:1,e:"Ping Sweep = ping ทั้ง subnet หาเครื่องที่เปิดอยู่"},
+  {s:"pdf",q:"การ Scan ที่ถูกเรียกว่า Half-Connection Scan คือการ Scan แบบใด",c:["TCP Connect Scan","SYN Scan","FIN Scan","UDP Scan"],a:1,e:"SYN Scan (-sS) ส่ง SYN→รับ SYN/ACK→ส่ง RST ไม่ทำ handshake ครบ"},
+  {s:"pdf",q:"OWASP ZAP เป็นเครื่องมือลักษณะ SAST หรือ DAST (ตอบตาม answer key)",c:["SAST","DAST"],a:0,e:"เฉลยในเอกสารตอบ SAST (หมายเหตุ: ตามนิยามสากล ZAP จัดเป็น DAST แต่ให้ตอบตามเฉลยอาจารย์)"},
+  {s:"pdf",q:"ถ้าต้องการจำลองการโจมตีของ Hacker มากที่สุด จะทำ pentest หรือ vulnerability assessment",c:["Vulnerability Assessment","Pentest"],a:1,e:"Pentest = ลงมือเจาะจริง / VA = แค่สแกนหาช่องโหว่"},
+  {s:"pdf",q:"หากต้องการสร้าง Backdoor โดยใช้ Metasploit Framework จะใช้คำสั่งอะไร",c:["msfconsole","msfvenom","meterpreter","msfdb"],a:1,e:"msfvenom = สร้าง payload / backdoor"},
+  {s:"pdf",q:"ชื่อของผู้เริ่มสร้าง Linux (ตอบเป็นภาษาอังกฤษ)",c:["Richard Stallman","Ken Thompson","Linus Torvalds","Dennis Ritchie"],a:2,e:"Linus Torvalds สร้าง Linux kernel ปี 1991"},
+  {s:"pdf",q:"ใน Level ใดที่กระทำในลักษณะ Physical hardware",c:["Kernel Level","Hardware Level","Application Level","User Level"],a:1,e:"Hardware Level = ระดับฮาร์ดแวร์จริง"},
+  {s:"pdf",q:"ใน Booting step หลังจาก load BIOS แล้วจะไปโหลดส่วนไหนต่อ",c:["Kernel","Master Boot Record","init","GRUB config"],a:1,e:"BIOS → MBR (Master Boot Record) → Bootloader → Kernel → init"},
+  {s:"pdf",q:"เมื่อ Linux OS เปิดขึ้น init จะอ่านไฟล์อะไรที่ใช้ในการ mount partition ต่าง ๆ",c:["/etc/mtab","/etc/passwd","/etc/fstab","/etc/mount"],a:2,e:"/etc/fstab = ตารางบอกว่า partition ไหน mount ที่ไหน"},
+  {s:"pdf",q:"คำสั่ง  chmod u+s target.txt  เป็นการ set SUID ใช่หรือไม่",c:["True","False"],a:0,e:"u+s = set SUID bit (รันด้วยสิทธิ์เจ้าของไฟล์)"},
+  {s:"pdf",q:"Event แตกต่างจาก Incident เพราะ Incident นั้นกระทบกับ",c:["DNS","CIA","OSI Model","RAM"],a:1,e:"CIA = Confidentiality, Integrity, Availability (Incident กระทบ 1 ใน 3)"},
+  {s:"pdf",q:"หากต้องการตรวจสอบ package ภายใน Debian จะใช้คำสั่งอะไร",c:["rpm -qa","yum list","dpkg -l","pacman -Q"],a:2,e:"dpkg -l = list package ที่ติดตั้งบน Debian/Ubuntu"},
+  {s:"pdf",q:"หากต้องการตรวจสอบหา service ที่ทำงานอยู่ จะใช้คำสั่ง WMI อะไร",c:['wmic service where (state="running") get caption, name, startmode, state','wmic process list brief','net start all','wmic startup get command'],a:0,e:"WMIC query service ที่ state = running"},
+  {s:"pdf",q:"application ค้นหา dll ที่ไม่มีอยู่จริง ทำให้ผู้โจมตีสร้างไฟล์ dll ไว้ใน path เพื่อยกระดับสิทธิ์ เรียกเทคนิคนี้ว่าอะไร",c:["DLL Injection","DLL Hijacking","Buffer Overflow","Path Traversal"],a:1,e:"DLL Hijacking = วาง DLL ปลอมใน path ที่โปรแกรมค้นหา"},
+  {s:"pdf",q:"คำสั่งสร้าง rule firewall ใน Windows ชื่อ 'ggez' ให้รับ connection port 12345",c:["iptables -A INPUT -p tcp --dport 12345 -j ACCEPT","netsh advfirewall firewall add rule name='ggez' dir=in action=allow protocol=Tcp localport=12345","ufw allow 12345/tcp","firewall-cmd --add-port=12345/tcp"],a:1,e:"netsh advfirewall = จัดการ firewall บน Windows / dir=in = ขาเข้า"},
+  {s:"pdf",q:"เมื่อได้ meterpreter แล้ว หากต้องการเชื่อมเข้าไปข้างใน network 10.10.10.0/24 จะใช้คำสั่ง autoroute อย่างไร",c:["route add 10.10.10.0/24","run autoroute -s 10.10.10.0/24","set LHOST 10.10.10.0","portfwd add -L 10.10.10.0"],a:1,e:"run autoroute -s <subnet> = pivot เข้า network ภายในผ่าน session"},
+  {s:"pdf",q:"หากเกิดการ clear log จะเกิด Windows Security EventID อะไร",c:["4624","4625","1102","4720"],a:2,e:"EventID 1102 = The audit log was cleared"},
+
+  /* ===== ถามตอบ / concept (จาก lab) ===== */
+  {s:"qa",q:"Symmetric Encryption ใช้กุญแจแบบใดในการเข้ารหัสและถอดรหัส",c:["กุญแจดอกเดียวกัน (Secret Key)","Public/Private key คนละดอก","ไม่ใช้กุญแจเลย","กุญแจสาธารณะอย่างเดียว"],a:0,e:"Symmetric = กุญแจลับดอกเดียว ใช้ทั้งเข้าและถอด"},
+  {s:"qa",q:"ช่องโหว่หลักของการใช้งาน Diffie-Hellman แบบพื้นฐานคืออะไร",c:["Buffer Overflow","Man-in-the-Middle","SQL Injection","Brute Force"],a:1,e:"DH ไม่มี authentication → ผู้โจมตีแทรกกลางได้ (MITM)"},
+  {s:"qa",q:"NTHash (NTLM) ใช้ algorithm อะไรในการสร้าง hash",c:["MD5(password)","SHA1(password)","MD4(UTF-16-LE(password))","DES(password)"],a:2,e:"NTHash = MD4 ของ password ที่ encode เป็น UTF-16-LE"},
+  {s:"qa",q:"LM hash แบ่ง password ออกเป็นกี่ก้อน ก้อนละกี่ตัวอักษร",c:["1 ก้อน 14 ตัว","2 ก้อน ก้อนละ 7 ตัว","3 ก้อน ก้อนละ 7 ตัว","2 ก้อน ก้อนละ 8 ตัว"],a:1,e:"LM แบ่งเป็น 2 ก้อน ก้อนละ 7 ตัว (แปลงเป็นตัวพิมพ์ใหญ่หมด) จึง crack ง่าย"},
+  {s:"qa",q:"Redis service โดยปกติทำงานที่ port อะไร",c:["3306","5432","6379","27017"],a:2,e:"Redis = 6379, PostgreSQL = 5432, MySQL = 3306, MongoDB = 27017"},
+  {s:"qa",q:"DNS record ประเภทใดใช้สำหรับการทำ Zone Transfer (sync ระหว่าง DNS 2 เครื่อง)",c:["A","MX","AXFR","CNAME"],a:2,e:"AXFR = zone transfer / A = IPv4, MX = mail, CNAME = alias"},
+  {s:"qa",q:"ไฟล์ configuration หลักของ Drupal อยู่ที่ path ใด",c:["wp-config.php","configuration.php","sites/default/settings.php","config/database.yml"],a:2,e:"Drupal: sites/default/settings.php / WordPress: wp-config.php / Joomla: configuration.php"},
+  {s:"qa",q:"เครื่องมือ Security Scanner เฉพาะสำหรับ WordPress คือตัวใด",c:["JoomScan","WPScan","Droopescan","Nikto"],a:1,e:"WPScan = WordPress / JoomScan = Joomla / Droopescan = ได้หลาย CMS"},
+  {s:"qa",q:"hashcat mode (-m) สำหรับ crack NTLM / NTHash คือเลขอะไร",c:["-m 0","-m 1000","-m 3000","-m 5600"],a:1,e:"0=MD5, 1000=NTLM, 3000=LM, 5500=NetNTLMv1, 5600=NetNTLMv2"},
+  {s:"qa",q:"ในเทคนิค command injection without space  ${IFS}  ถูกใช้แทนอะไร",c:["ตัวเลข","ช่องว่าง (space)","เครื่องหมาย ;","ตัวอักษร A"],a:1,e:"$IFS (Internal Field Separator) ค่า default เป็น space ใช้เลี่ยง filter ช่องว่าง"},
+  {s:"qa",q:"เครื่องมือที่ปลอมตัวเป็น Server เพื่อดักจับ NTLM hash ในเครือข่ายคือตัวใด",c:["Mimikatz","Responder","Hydra","John"],a:1,e:"Responder ปลอมเป็น server หลอกให้ client ส่ง hash มา / Mimikatz ดึง hash จาก memory"},
+  {s:"qa",q:"Reverse Shell แตกต่างจาก Bind Shell อย่างไร",c:["Reverse: เครื่องเป้าหมายวิ่งมาหาเรา / Bind: เราวิ่งไปหาเป้าหมาย","Reverse เร็วกว่า Bind เสมอ","Bind ใช้ UDP เท่านั้น","ไม่ต่างกันเลย"],a:0,e:"Reverse = victim connect ออกมาหา attacker (ผ่าน firewall ขาออกได้)"},
+  {s:"qa",q:"UDF (User Defined Function) ใน MySQL ที่ใช้รันคำสั่ง OS ได้คือฟังก์ชันใด",c:["load_file()","sys_eval()","concat()","extractvalue()"],a:1,e:"sys_eval('cmd') / sys_exec('cmd') รันคำสั่ง OS ผ่าน MySQL"},
+  {s:"qa",q:"CVE-2015-3306 เป็นช่องโหว่ของ service ใด",c:["Apache","ProFTPD (mod_copy)","Redis","MySQL"],a:1,e:"ProFTPD 1.3.5 mod_copy → RCE ผ่าน SITE CPFR/CPTO"},
+  {s:"qa",q:"Drupalgeddon2 (CVE-2018-7600) ใช้โจมตี CMS ใด",c:["WordPress","Joomla","Drupal","Magento"],a:2,e:"Drupalgeddon2 = RCE บน Drupal 7.x/8.x"},
+
+  /* ===== คำสั่ง (10) ===== */
+  {s:"cmd",q:"คำสั่งดูว่า user ปัจจุบันรันอะไรด้วย sudo ได้บ้าง",c:["sudo -v","sudo -l","sudo su","whoami"],a:1,e:"sudo -l = list สิทธิ์ sudo ของ user (ใช้หา privesc)"},
+  {s:"cmd",q:"คำสั่งหาไฟล์ชื่อขึ้นต้นด้วย flag ทั้งเครื่อง (ซ่อน error)",c:["locate flag","grep -r flag /","find / -name \"flag*\" 2>/dev/null","ls -R / | grep flag"],a:2,e:"find / -name pattern 2>/dev/null = หาทั้งเครื่อง ซ่อน permission denied"},
+  {s:"cmd",q:"คำสั่งอ่านข้อความที่อ่านได้ (readable string) ออกจากไฟล์ binary",c:["cat","strings","hexdump","xxd"],a:1,e:"strings = ดึงข้อความยาว ≥4 ตัวจาก binary"},
+  {s:"cmd",q:"คำสั่งถอดรหัส Base64 บน Linux",c:["base64 -e","base64 -d","echo -d","b64decode"],a:1,e:"echo 'xxx' | base64 -d"},
+  {s:"cmd",q:"คำสั่งทำ DNS Zone Transfer ของ domain ggez.org จาก DNS server",c:["nslookup ggez.org","dig @<DNS_IP> ggez.org AXFR","host -t MX ggez.org","dig ggez.org A"],a:1,e:"dig @<DNS_IP> <domain> AXFR = ขอ zone transfer"},
+  {s:"cmd",q:"คำสั่ง brute force SSH ด้วย hydra (user=noob, wordlist=pass.txt)",c:["hydra -l noob -P pass.txt ssh://IP","nmap --script ssh-brute IP","ssh noob@IP -w pass.txt","medusa ssh IP"],a:0,e:"hydra -l <user> -P <wordlist> ssh://<IP>"},
+  {s:"cmd",q:"คำสั่ง crack NTHash ด้วย John The Ripper",c:["john --format=md5 hash.txt","john --format=nt hash.txt","john --format=lm hash.txt","john --crack hash.txt"],a:1,e:"john --format=nt (NTHash) / --format=lm (LM) / --format=netntlmv2"},
+  {s:"cmd",q:"คำสั่งเชื่อมต่อ PostgreSQL server ด้วย user postgres",c:["mysql -h IP -u postgres","psql -h IP -U postgres","pg_connect IP postgres","postgres -h IP"],a:1,e:"psql -h <IP> -U postgres (เพิ่ม -d postgres ถ้า error database)"},
+  {s:"cmd",q:"คำสั่งดึงข้อมูลทั้งหมดจาก SNMP service ด้วย community string 'public'",c:["snmpget public IP","snmpwalk -v2c -c public IP","snmp-check IP","nmap -sU -p161 IP"],a:1,e:"snmpwalk -v2c -c <community> <IP>"},
+  {s:"cmd",q:"คำสั่งสั่ง droopescan ให้ scan เว็บโดยระบุว่าเป็น Drupal",c:["droopescan -u URL","droopescan scan drupal -u URL","wpscan --url URL","droopescan drupal URL"],a:1,e:"droopescan scan drupal -u <URL>"},
+
+  /* ===== สถานการณ์ → เทคนิค (scenario) ===== */
+  {s:"scenario",q:"เว็บมีช่องให้กรอก IP แล้วกด ping จากนั้นเอาผลลัพธ์มาแสดงบนหน้าจอ — ช่องโหว่ที่น่าจะมีคือ",c:["SQL Injection","Command Injection","XSS","CSRF"],a:1,e:"รับ input ไปต่อใน shell command → Command Injection (ใช้ ; && | )"},
+  {s:"scenario",q:"SQL Injection ที่เว็บแสดง error message ของ database ออกมาให้เห็น เรียกว่าแบบใด",c:["Blind SQLi","Error-based SQLi","Union-based SQLi","Time-based SQLi"],a:1,e:"Error-based ใช้ error message ดึงข้อมูล (เช่น extractvalue)"},
+  {s:"scenario",q:"ต้องการ bypass หน้า login ด้วย SQL Injection ควรใส่ payload แบบใดในช่อง username",c:["admin AND 1=1","' or '1'='1","; DROP TABLE users","<script>alert(1)</script>"],a:1,e:"' or '1'='1 ทำให้เงื่อนไขเป็นจริงเสมอ (หรือ admin'-- - เพื่อคืน row เดียว)"},
+  {s:"scenario",q:"เว็บเซิร์ฟเวอร์เปิด HTTP PUT method ไว้ (WebDAV) ผู้โจมตีทำอะไรได้",c:["ลบไฟล์เว็บ","upload webshell ขึ้นเซิร์ฟเวอร์","เปลี่ยน DNS","อ่าน RAM"],a:1,e:"PUT = upload ไฟล์ → วาง webshell (.php) แล้วรันคำสั่งได้"},
+  {s:"scenario",q:"ต้องการหา directory/path ที่ซ่อนอยู่แต่ไม่มี link ชี้ถึงบนเว็บ ควรใช้วิธีใด",c:["SQL Injection","Directory Brute Force (gobuster/dirb)","Port Scanning","ARP Spoofing"],a:1,e:"gobuster / dirb / dirsearch เดาสุ่มชื่อ directory จาก wordlist"},
+  {s:"scenario",q:"พบว่า sudo -l แสดงว่า user รัน nano ด้วย root ได้ — จะยกสิทธิ์เป็น root อย่างไร",c:["เปลี่ยน password root","ใน nano กด Ctrl+R แล้ว Ctrl+X แล้วพิมพ์ reset; sh 1>&0 2>&0","แก้ /etc/passwd ด้วย nano","รัน sudo su"],a:1,e:"GTFOBins: nano มี Execute Command (Ctrl+R, Ctrl+X) รันเป็น root ได้"},
+  {s:"scenario",q:"พบไฟล์ .jpg ที่ข้างในมี zip ซ่อนต่อท้าย — ใช้เครื่องมือใดในการตรวจและแยกออกมา",c:["steghide","binwalk","exiftool","hashcat"],a:1,e:"binwalk ตรวจ/แยกไฟล์ที่ซ่อนต่อท้าย (binwalk -e)"},
+  {s:"scenario",q:"Command injection แต่ไม่แสดงผลลัพธ์บนหน้าจอเลย (blind) จะยืนยันว่า inject ได้อย่างไร",c:["ลอง ; whoami แล้วดูหน้าจอ","ใช้ ; sleep 5 แล้ววัดเวลา response (time-based)","รีเฟรชหน้าเว็บ","ดู cookie"],a:1,e:"Blind → ใช้ sleep วัดเวลา หรือ OOB (ให้ target ยิงออกมาหา server เรา)"},
+  {s:"scenario",q:"ต้องการส่งไฟล์จากเครื่องเราไปยังเครื่องปลายทางผ่าน netcat (ฝั่งรับรัน nc -lvp 10000 > out) ฝั่งส่งใช้คำสั่งใด",c:["nc IP 10000 < file","cat file | nc IP 10000","scp file IP","nc -lvp 10000 file"],a:1,e:"cat <file> | nc <IP> <port> ส่งเนื้อไฟล์เข้า listener ปลายทาง"},
+  {s:"scenario",q:"Redis เปิดอยู่โดยไม่มี auth และเราต้องการ login SSH เข้าเครื่อง Redis — เทคนิคที่ใช้คือ",c:["crack password Redis","ยัด SSH public key เข้า /root/.ssh/authorized_keys ผ่าน Redis (config set dir + save)","ส่ง email หลอก admin","ปิด firewall"],a:1,e:"เขียน public key ลง authorized_keys โดย set dir=/root/.ssh, dbfilename=authorized_keys, save"},
+];
+
+/* ---------------- APP ---------------- */
+const $ = s => document.querySelector(s);
+const el = {
+  start:$("#start"), quiz:$("#quiz"), result:$("#result"),
+  qnum:$("#qnum"), qtotal:$("#qtotal"), qsection:$("#qsection"),
+  progress:$("#progress"), qtext:$("#qtext"), choices:$("#choices"),
+  explain:$("#explain"), nextBtn:$("#nextBtn"), quitBtn:$("#quitBtn"),
+  scoreNum:$("#scoreNum"), scoreTotal:$("#scoreTotal"), scoreMsg:$("#scoreMsg"),
+  retryBtn:$("#retryBtn"), homeBtn:$("#homeBtn"), reviewBtn:$("#reviewBtn"),
+  review:$("#review"), donut:$("#donut"),
+  shuffleQ:$("#shuffleQ"), shuffleC:$("#shuffleC"), instant:$("#instant"),
+};
+const SECMAP = {pdf:["PDF",'pill pdf'], qa:["ถามตอบ",'pill qa'], cmd:["คำสั่ง",'pill cmd'], scenario:["สถานการณ์",'pill scenario']};
+
+let state = null;
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function startQuiz(mode){
+  let pool = BANK.filter(q => mode===25 ? q.s==="pdf" : true).map(q=>({...q}));
+  if(el.shuffleQ.checked) shuffle(pool);
+  // build per-question choice order
+  pool = pool.map(q=>{
+    let order = q.c.map((_,i)=>i);
+    if(el.shuffleC.checked && q.c.length>2) order = shuffle(order);
+    return {...q, order, picked:null};
+  });
+  state = {mode, pool, idx:0, score:0, instant:el.instant.checked};
+  el.start.classList.add("hidden");
+  el.result.classList.add("hidden");
+  el.quiz.classList.remove("hidden");
+  el.qtotal.textContent = pool.length;
+  render();
+}
+
+function render(){
+  const q = state.pool[state.idx];
+  el.qnum.textContent = state.idx+1;
+  el.progress.style.width = ((state.idx)/state.pool.length*100)+"%";
+  const sm = SECMAP[q.s]; el.qsection.className = sm[1]; el.qsection.textContent = sm[0];
+  // render code-ish inline: wrap things that look like commands
+  el.qtext.innerHTML = fmt(q.q);
+  el.choices.innerHTML = "";
+  el.explain.className = "explain";
+  el.nextBtn.disabled = true;
+  el.nextBtn.textContent = (state.idx===state.pool.length-1) ? "ดูผลคะแนน →" : "ถัดไป →";
+  q.order.forEach((ci, visIdx)=>{
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = `<span class="key">${visIdx+1}</span><span>${fmt(q.c[ci])}</span>`;
+    b.onclick = ()=> pick(visIdx);
+    el.choices.appendChild(b);
+  });
+  // if already answered (navigating), re-show
+  if(q.picked!==null){ reveal(q.picked); }
+}
+
+function fmt(t){
+  // escape then lightly format code tokens
+  let s = t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return s;
+}
+
+function pick(visIdx){
+  const q = state.pool[state.idx];
+  if(q.picked!==null) return; // lock after answer
+  q.picked = visIdx;
+  const chosenReal = q.order[visIdx];
+  if(chosenReal===q.a) state.score++;
+  if(state.instant){ reveal(visIdx); }
+  else {
+    // mark selection only, allow next
+    [...el.choices.children].forEach((c,i)=>{ c.disabled=true; if(i===visIdx) c.classList.add(chosenReal===q.a?"correct":"wrong"); });
+  }
+  el.nextBtn.disabled = false;
+}
+
+function reveal(visIdx){
+  const q = state.pool[state.idx];
+  [...el.choices.children].forEach((c,i)=>{
+    c.disabled = true;
+    const real = q.order[i];
+    if(real===q.a) c.classList.add("correct");
+    else if(i===visIdx) c.classList.add("wrong");
+    else c.classList.add("dim");
+  });
+  if(q.e){ el.explain.innerHTML = "<b>เฉลย:</b> "+fmt(q.e); el.explain.classList.add("show"); }
+  el.nextBtn.disabled = false;
+}
+
+el.nextBtn.onclick = ()=>{
+  if(state.pool[state.idx].picked===null) return;
+  if(state.idx < state.pool.length-1){ state.idx++; render(); }
+  else finish();
+};
+el.quitBtn.onclick = ()=> goHome();
+
+function finish(){
+  el.quiz.classList.add("hidden");
+  el.result.classList.remove("hidden");
+  el.review.classList.add("hidden");
+  const total = state.pool.length, sc = state.score, pct = Math.round(sc/total*100);
+  el.scoreNum.textContent = sc; el.scoreTotal.textContent = total;
+  let msg = pct>=90?"สุดยอด! พร้อมสอบแล้ว 🔥":pct>=70?"ดีมาก ทบทวนข้อที่ผิดอีกนิด 💪":pct>=50?"ผ่านเกณฑ์ แต่ต้องอ่านเพิ่ม 📚":"ต้องทบทวนอีกเยอะนะ ลองดูเฉลยทั้งหมด 👀";
+  el.scoreMsg.textContent = `${pct}% — ${msg}`;
+  drawDonut(pct);
+}
+
+function drawDonut(pct){
+  const r=60,c=2*Math.PI*r, off=c*(1-pct/100);
+  const col = pct>=70?"#39d98a":pct>=50?"#ffb020":"#ff5c6c";
+  el.donut.innerHTML = `
+    <circle cx="75" cy="75" r="${r}" fill="none" stroke="#1b2534" stroke-width="12"/>
+    <circle cx="75" cy="75" r="${r}" fill="none" stroke="${col}" stroke-width="12"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"
+      transform="rotate(-90 75 75)" style="transition:stroke-dashoffset .6s"/>
+    <text x="75" y="82" text-anchor="middle" fill="${col}" font-size="26" font-weight="800" font-family="monospace">${pct}%</text>`;
+}
+
+el.reviewBtn.onclick = ()=>{
+  const r = el.review; r.classList.toggle("hidden");
+  if(r.classList.contains("hidden")) return;
+  r.innerHTML = state.pool.map((q,i)=>{
+    const chosenReal = q.picked===null?null:q.order[q.picked];
+    const ok = chosenReal===q.a;
+    const yourTxt = chosenReal===null?"<span class='mut'>ไม่ได้ตอบ</span>":fmt(q.c[chosenReal]);
+    const sm=SECMAP[q.s];
+    return `<div class="ritem">
+      <div class="rq"><span class="${sm[1]}">${sm[0]}</span> &nbsp;${i+1}. ${fmt(q.q)}</div>
+      <div class="ra">${ok?"<span class='tick'>✓ ตอบถูก</span>":"<span class='cross'>✗ ตอบผิด</span>"} &nbsp;|&nbsp; คำตอบคุณ: ${yourTxt}</div>
+      <div class="ra" style="margin-top:4px">เฉลย: <b style="color:var(--good)">${fmt(q.c[q.a])}</b></div>
+      ${q.e?`<div class="ra mut" style="margin-top:4px">${fmt(q.e)}</div>`:""}
+    </div>`;
+  }).join("");
+};
+el.retryBtn.onclick = ()=> startQuiz(state.mode);
+el.homeBtn.onclick = ()=> goHome();
+
+function goHome(){
+  state=null;
+  el.quiz.classList.add("hidden");
+  el.result.classList.add("hidden");
+  el.start.classList.remove("hidden");
+}
+
+document.querySelectorAll(".mode").forEach(b=> b.onclick = ()=> startQuiz(parseInt(b.dataset.mode,10)));
+
+// keyboard
+document.addEventListener("keydown",e=>{
+  if(el.quiz.classList.contains("hidden")) return;
+  if(["1","2","3","4"].includes(e.key)){
+    const i=parseInt(e.key,10)-1;
+    if(el.choices.children[i]) el.choices.children[i].click();
+  } else if(e.key==="Enter"){ if(!el.nextBtn.disabled) el.nextBtn.click(); }
+});
+</script>
+</body>
+</html>
